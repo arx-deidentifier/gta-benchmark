@@ -1,2 +1,1 @@
-# gta-benchmark
-Benchmark
+# Benchmark
