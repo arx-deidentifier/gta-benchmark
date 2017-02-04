@@ -157,11 +157,11 @@ public abstract class BenchmarkExperiment1 extends BenchmarkExperiment {
         
         // Run benchmarks
         BENCHMARK.addValue(PAYOUT_COST_BENEFIT, getCostBenefitPayout(data, configuration));
-        BENCHMARK.addValue(PAYOUT_50_AVG_RISK, getAverageRiskPayout(data, configuration, 0.5d));
-        BENCHMARK.addValue(PAYOUT_33_AVG_RISK, getAverageRiskPayout(data, configuration, 0.33d));
-        BENCHMARK.addValue(PAYOUT_20_AVG_RISK, getAverageRiskPayout(data, configuration, 0.2d));
-        BENCHMARK.addValue(PAYOUT_50_IND_RISK, getIndividualRiskPayout(data, configuration, 0.5d));
-        BENCHMARK.addValue(PAYOUT_33_IND_RISK, getIndividualRiskPayout(data, configuration, 0.33d));
-        BENCHMARK.addValue(PAYOUT_20_IND_RISK, getIndividualRiskPayout(data, configuration, 0.2d));
+        BENCHMARK.addValue(PAYOUT_50_AVG_RISK, getAverageRiskPayout(data, configuration, 2));
+        BENCHMARK.addValue(PAYOUT_33_AVG_RISK, getAverageRiskPayout(data, configuration, 3));
+        BENCHMARK.addValue(PAYOUT_20_AVG_RISK, getAverageRiskPayout(data, configuration, 5));
+        BENCHMARK.addValue(PAYOUT_50_IND_RISK, getIndividualRiskPayout(data, configuration, 2));
+        BENCHMARK.addValue(PAYOUT_33_IND_RISK, getIndividualRiskPayout(data, configuration, 3));
+        BENCHMARK.addValue(PAYOUT_20_IND_RISK, getIndividualRiskPayout(data, configuration, 5));
     }
 }

@@ -42,29 +42,17 @@ import de.linearbits.subframe.analyzer.ValueBuffer;
  *
  * @author Fabian Prasser
  */
-public abstract class BenchmarkExperiment3 extends BenchmarkExperiment {
+public abstract class BenchmarkExperiment_V2_2 extends BenchmarkExperiment {
 
     /** The benchmark instance */
     private static final Benchmark BENCHMARK            = new Benchmark(new String[] { "quality model", "adversary gain = publisher loss" });
     /** MEASUREMENT PARAMETER */
     private static final int       QUALITY_COST_BENEFIT = BENCHMARK.addMeasure("Quality (cost/benefit)");
     /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_50_AVG_RISK  = BENCHMARK.addMeasure("Quality (50% avg. risk)");
-    /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_33_AVG_RISK  = BENCHMARK.addMeasure("Quality (33% avg. risk)");
-    /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_20_AVG_RISK  = BENCHMARK.addMeasure("Quality (20% avg. risk)");
-    /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_50_IND_RISK  = BENCHMARK.addMeasure("Quality (50% ind. risk)");
-    /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_33_IND_RISK  = BENCHMARK.addMeasure("Quality (33% ind. risk)");
-    /** MEASUREMENT PARAMETER */
-    private static final int       QUALITY_20_IND_RISK  = BENCHMARK.addMeasure("Quality (20% ind. risk)");
-    /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_COST_BENEFIT  = BENCHMARK.addMeasure("Payout (cost/benefit)");
     /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_OPTIMAL       = BENCHMARK.addMeasure("Payout (optimal)");
-    
+
     /**
      * Main
      * @param args
@@ -72,37 +60,33 @@ public abstract class BenchmarkExperiment3 extends BenchmarkExperiment {
      */
     public static void main(String[] args) throws IOException {
 
-        BenchmarkDataset dataset = BenchmarkSetup.getBenchmarkDataset(args[0]);
+        BenchmarkDataset dataset = BenchmarkSetup.getBenchmarkDataset("adult-tn");
 
         // Init
         BENCHMARK.addAnalyzer(QUALITY_COST_BENEFIT, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_50_AVG_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_33_AVG_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_20_AVG_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_50_IND_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_33_IND_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(QUALITY_20_IND_RISK, new ValueBuffer());
         BENCHMARK.addAnalyzer(PAYOUT_COST_BENEFIT, new ValueBuffer());
         BENCHMARK.addAnalyzer(PAYOUT_OPTIMAL, new ValueBuffer());
 
-        // Perform
-        ARXCostBenefitConfiguration config = ARXCostBenefitConfiguration.create()
-                                                                        .setAdversaryCost(BenchmarkSetup.getDefaultAdversaryCost())
-                                                                        .setAdversaryGain(BenchmarkSetup.getDefaultAdversaryGain())
-                                                                        .setPublisherLoss(BenchmarkSetup.getDefaultPublisherLoss())
-                                                                        .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
+        double[] parameters = BenchmarkSetup.getParametersGainLoss2();
+        for (Metric<?> metric : new Metric[] {  Metric.createPrecomputedLossMetric(1d),
+                                                Metric.createPrecomputedNormalizedEntropyMetric(1d),
+                                                Metric.createKLDivergenceMetric() }) {
+            
+            for (double parameter : parameters) {
 
-        double[] parameters = BenchmarkSetup.getParametersGainLoss();
-        for (double parameter : parameters) {
-            config.setAdversaryGain(parameter);
-            config.setPublisherLoss(parameter);
-            System.out.println(" - Adversary gain = publisher loss - " + parameter + " - " + Arrays.toString(parameters));
-            for (Metric<?> metric : new Metric[] { Metric.createPrecomputedLossMetric(1d),
-                    Metric.createPrecomputedNormalizedEntropyMetric(1d),
-                    Metric.createKLDivergenceMetric() }) {
+                // Perform
+                ARXCostBenefitConfiguration config = ARXCostBenefitConfiguration.create()
+                                                                                .setAdversaryCost(BenchmarkSetup.getDefaultAdversaryCost())
+                                                                                .setAdversaryGain(BenchmarkSetup.getDefaultAdversaryGain())
+                                                                                .setPublisherLoss(BenchmarkSetup.getDefaultPublisherLoss())
+                                                                                .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
+
+                config.setAdversaryGain(parameter);
+                config.setPublisherLoss(parameter);
+                System.out.println(" - Adversary gain = publisher loss - " + parameter + " - " + Arrays.toString(parameters));
                 BENCHMARK.addRun(metric.getName(), config.getAdversaryGain());
                 analyze(dataset, config, metric);
-                BENCHMARK.getResults().write(new File("results/"+dataset.toString()+"-experiment3.csv"));
+                BENCHMARK.getResults().write(new File("results/" + dataset.toString() + "-experiment-v2-2.csv"));
             }
         }
     }
@@ -118,15 +102,10 @@ public abstract class BenchmarkExperiment3 extends BenchmarkExperiment {
      
         // Load data
         Data data = BenchmarkSetup.getData(dataset);
-        
         BENCHMARK.addValue(QUALITY_COST_BENEFIT, getCostBenefitQuality(data, configuration, metric));
-        BENCHMARK.addValue(QUALITY_50_AVG_RISK, getAverageRiskQuality(data, configuration, 2, metric));
-        BENCHMARK.addValue(QUALITY_33_AVG_RISK, getAverageRiskQuality(data, configuration, 3, metric));
-        BENCHMARK.addValue(QUALITY_20_AVG_RISK, getAverageRiskQuality(data, configuration, 5, metric));
-        BENCHMARK.addValue(QUALITY_50_IND_RISK, getIndividualRiskQuality(data, configuration, 2, metric));
-        BENCHMARK.addValue(QUALITY_33_IND_RISK, getIndividualRiskQuality(data, configuration, 3, metric));
-        BENCHMARK.addValue(QUALITY_20_IND_RISK, getIndividualRiskQuality(data, configuration, 5, metric));
+        data = BenchmarkSetup.getData(dataset);
         BENCHMARK.addValue(PAYOUT_COST_BENEFIT, getCostBenefitPayout(data, configuration, metric));
+        data = BenchmarkSetup.getData(dataset);
         BENCHMARK.addValue(PAYOUT_OPTIMAL, getCostBenefitPayout(data, configuration));
     }
 }

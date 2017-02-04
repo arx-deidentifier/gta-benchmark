@@ -41,7 +41,7 @@ import de.linearbits.subframe.analyzer.ValueBuffer;
  *
  * @author Fabian Prasser
  */
-public abstract class BenchmarkExperiment2 extends BenchmarkExperiment {
+public abstract class BenchmarkExperiment_V2_1 extends BenchmarkExperiment {
 
 
     /** The benchmark instance */
@@ -49,15 +49,11 @@ public abstract class BenchmarkExperiment2 extends BenchmarkExperiment {
     /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_COST_BENEFIT = BENCHMARK.addMeasure("Cost/benefit");
     /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_50_AVG_RISK  = BENCHMARK.addMeasure("50% avg. risk");
-    /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_33_AVG_RISK  = BENCHMARK.addMeasure("33% avg. risk");
+    private static final int       PAYOUT_09_AVG_RISK  = BENCHMARK.addMeasure("9% avg. risk");
     /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_20_AVG_RISK  = BENCHMARK.addMeasure("20% avg. risk");
     /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_50_IND_RISK  = BENCHMARK.addMeasure("50% ind. risk");
-    /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_33_IND_RISK  = BENCHMARK.addMeasure("33% ind. risk");
+    private static final int       PAYOUT_09_IND_RISK  = BENCHMARK.addMeasure("9% ind. risk");
     /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_20_IND_RISK  = BENCHMARK.addMeasure("20% ind. risk");
 
@@ -68,15 +64,13 @@ public abstract class BenchmarkExperiment2 extends BenchmarkExperiment {
      */
     public static void main(String[] args) throws IOException {
 
-        BenchmarkDataset dataset = BenchmarkSetup.getBenchmarkDataset(args[0]);
+        BenchmarkDataset dataset = BenchmarkSetup.getBenchmarkDataset("adult-tn");
 
         // Init
         BENCHMARK.addAnalyzer(PAYOUT_COST_BENEFIT, new ValueBuffer());
-        BENCHMARK.addAnalyzer(PAYOUT_50_AVG_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(PAYOUT_33_AVG_RISK, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_09_AVG_RISK, new ValueBuffer());
         BENCHMARK.addAnalyzer(PAYOUT_20_AVG_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(PAYOUT_50_IND_RISK, new ValueBuffer());
-        BENCHMARK.addAnalyzer(PAYOUT_33_IND_RISK, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_09_IND_RISK, new ValueBuffer());
         BENCHMARK.addAnalyzer(PAYOUT_20_IND_RISK, new ValueBuffer());
         
         // Perform
@@ -86,14 +80,14 @@ public abstract class BenchmarkExperiment2 extends BenchmarkExperiment {
                                                                         .setPublisherLoss(BenchmarkSetup.getDefaultPublisherLoss())
                                                                         .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
 
-        double[] parameters = BenchmarkSetup.getParametersGainLoss();
+        double[] parameters = BenchmarkSetup.getParametersGainLoss2();
         for (double parameter : parameters) {
             config.setAdversaryGain(parameter);
             config.setPublisherLoss(parameter);
             System.out.println(" - Adversary gain = publisher loss - " + parameter + " - " + Arrays.toString(parameters));
             BENCHMARK.addRun(config.getAdversaryGain());
             analyze(dataset, config);
-            BENCHMARK.getResults().write(new File("results/"+dataset.toString()+"-experiment2.csv"));
+            BENCHMARK.getResults().write(new File("results/"+dataset.toString()+"-experiment-v2-1.csv"));
         }
     }
 
@@ -110,11 +104,9 @@ public abstract class BenchmarkExperiment2 extends BenchmarkExperiment {
         
         // Run benchmarks
         BENCHMARK.addValue(PAYOUT_COST_BENEFIT, getCostBenefitPayout(data, configuration));
-        BENCHMARK.addValue(PAYOUT_50_AVG_RISK, getAverageRiskPayout(data, configuration, 2));
-        BENCHMARK.addValue(PAYOUT_33_AVG_RISK, getAverageRiskPayout(data, configuration, 3));
+        BENCHMARK.addValue(PAYOUT_09_AVG_RISK, getAverageRiskPayout(data, configuration, 11));
         BENCHMARK.addValue(PAYOUT_20_AVG_RISK, getAverageRiskPayout(data, configuration, 5));
-        BENCHMARK.addValue(PAYOUT_50_IND_RISK, getIndividualRiskPayout(data, configuration, 2));
-        BENCHMARK.addValue(PAYOUT_33_IND_RISK, getIndividualRiskPayout(data, configuration, 3));
+        BENCHMARK.addValue(PAYOUT_09_IND_RISK, getIndividualRiskPayout(data, configuration, 11));
         BENCHMARK.addValue(PAYOUT_20_IND_RISK, getIndividualRiskPayout(data, configuration, 5));
     }
 }

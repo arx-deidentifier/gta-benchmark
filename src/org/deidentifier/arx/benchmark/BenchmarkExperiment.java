@@ -68,18 +68,18 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
-     * @param threshold
+     * @param k
      * @return
      * @throws IOException 
      */
-    public static double getAverageRiskPayout(Data data, ARXCostBenefitConfiguration configuration, double threshold) throws IOException {
+    public static double getAverageRiskPayout(Data data, ARXCostBenefitConfiguration configuration, int k) throws IOException {
 
         double payout = 0d;
         ARXConfiguration config = ARXConfiguration.create();
         config.setCostBenefitConfiguration(configuration);
         config.setQualityModel(Metric.createPublisherPayoutMetric(false));
         config.setMaxOutliers(1d);
-        config.addPrivacyModel(new AverageReidentificationRisk(threshold));
+        config.addPrivacyModel(new AverageReidentificationRisk(1d/(double)k));
         ARXAnonymizer anonymizer = new ARXAnonymizer();
         ARXResult result = anonymizer.anonymize(data, config);
         payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
@@ -91,19 +91,21 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
-     * @param threshold
+     * @param k
      * @param metric 
      * @return
      * @throws IOException 
      */
-    public static double getAverageRiskQuality(Data data, ARXCostBenefitConfiguration configuration, double threshold, Metric<?> metric) throws IOException {
+    public static double getAverageRiskQuality(Data data, ARXCostBenefitConfiguration configuration, int k, Metric<?> metric) throws IOException {
 
         double quality = 0d;
         ARXConfiguration config = ARXConfiguration.create();
-        config.setCostBenefitConfiguration(configuration);
+        if (configuration != null) {
+            config.setCostBenefitConfiguration(configuration);
+        }
         config.setQualityModel(metric);
         config.setMaxOutliers(1d);
-        config.addPrivacyModel(new AverageReidentificationRisk(threshold));
+        config.addPrivacyModel(new AverageReidentificationRisk(1d/(double)k));
         ARXAnonymizer anonymizer = new ARXAnonymizer();
         ARXResult result = anonymizer.anonymize(data, config);
         quality = Double.valueOf(result.getGlobalOptimum().getHighestScore().toString());
@@ -302,26 +304,18 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
-     * @param threshold
+     * @param k
      * @return
      * @throws IOException 
      */
-    public static double getIndividualRiskPayout(Data data, ARXCostBenefitConfiguration configuration, double threshold) throws IOException {
+    public static double getIndividualRiskPayout(Data data, ARXCostBenefitConfiguration configuration, int k) throws IOException {
 
         double payout = 0d;
         ARXConfiguration config = ARXConfiguration.create();
         config.setCostBenefitConfiguration(configuration);
         config.setQualityModel(Metric.createPublisherPayoutMetric(false));
         config.setMaxOutliers(1d);
-        if (threshold == 0.50d) {
-            config.addPrivacyModel(new KAnonymity(2));
-        } else if (threshold == 0.33d) {
-            config.addPrivacyModel(new KAnonymity(3));
-        } else if (threshold == 0.20d) {
-            config.addPrivacyModel(new KAnonymity(5));
-        } else {
-            throw new IllegalArgumentException("Unknown threshold");
-        }
+        config.addPrivacyModel(new KAnonymity(k));
         ARXAnonymizer anonymizer = new ARXAnonymizer();
         ARXResult result = anonymizer.anonymize(data, config);
         payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
@@ -333,27 +327,21 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
-     * @param threshold
+     * @param k
      * @param metric 
      * @return
      * @throws IOException 
      */
-    public static double getIndividualRiskQuality(Data data, ARXCostBenefitConfiguration configuration, double threshold, Metric<?> metric) throws IOException {
+    public static double getIndividualRiskQuality(Data data, ARXCostBenefitConfiguration configuration, int k, Metric<?> metric) throws IOException {
 
         double quality = 0d;
         ARXConfiguration config = ARXConfiguration.create();
-        config.setCostBenefitConfiguration(configuration);
+        if (configuration != null) {
+            config.setCostBenefitConfiguration(configuration);
+        }
         config.setQualityModel(metric);
         config.setMaxOutliers(1d);
-        if (threshold == 0.50d) {
-            config.addPrivacyModel(new KAnonymity(2));
-        } else if (threshold == 0.33d) {
-            config.addPrivacyModel(new KAnonymity(3));
-        } else if (threshold == 0.20d) {
-            config.addPrivacyModel(new KAnonymity(5));
-        } else {
-            throw new IllegalArgumentException("Unknown threshold");
-        }
+        config.addPrivacyModel(new KAnonymity(k));
         ARXAnonymizer anonymizer = new ARXAnonymizer();
         ARXResult result = anonymizer.anonymize(data, config);
         quality = Double.valueOf(result.getGlobalOptimum().getHighestScore().toString());
