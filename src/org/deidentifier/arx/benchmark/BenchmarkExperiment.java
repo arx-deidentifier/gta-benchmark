@@ -23,6 +23,7 @@ package org.deidentifier.arx.benchmark;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -121,29 +122,6 @@ public class BenchmarkExperiment {
     }
 
     /**
-     * Perform benchmark run.
-     * @param data
-     * @param configuration
-     * @return
-     * @throws IOException 
-     */
-    public static double getSafeHarborPayout(Data data, ARXCostBenefitConfiguration configuration) throws IOException {
-
-        double payout = 0d;
-        ARXConfiguration config = ARXConfiguration.create();
-        config.setCostBenefitConfiguration(configuration);
-        config.setQualityModel(Metric.createPublisherPayoutMetric(false));
-        config.setMaxOutliers(1d);
-        // Ugly hack
-        config.addPrivacyModel(new DPresence(0d, 1d, DataSubset.create(data, data)));
-        ARXAnonymizer anonymizer = new ARXAnonymizer();
-        ARXResult result = anonymizer.anonymize(data, config);
-        payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
-        data.getHandle().release();
-        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
-    }
-    
-    /**
      * Perform benchmark run
      * @param data
      * @param configuration
@@ -164,7 +142,7 @@ public class BenchmarkExperiment {
         data.getHandle().release();
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
-
+    
     /**
      * Perform benchmark run
      * @param data
@@ -236,6 +214,53 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
+     * @param metric 
+     * @return
+     * @throws IOException 
+     */
+    public static double getCostBenefitQuality2(Data data, ARXCostBenefitConfiguration configuration, Metric<?> metric) throws IOException {
+
+        // Optimize for quality model
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+        config.setMaxOutliers(1d);
+        config.addPrivacyModel(new ProfitabilityProsecutor());
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        int[] transformation = anonymizer.anonymize(data, config).getGlobalOptimum().getTransformation();
+        data.getHandle().release();
+        
+        
+        
+        // Return associated payout
+        config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(metric);
+        config.setMaxOutliers(1d);
+        config.addPrivacyModel(new ProfitabilityProsecutor());
+        anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        for (ARXNode[] level : result.getLattice().getLevels()) {
+            for (ARXNode node : level) {
+                if (Arrays.equals(node.getTransformation(), transformation)) {
+                    result.getOutput(node);
+                    double quality = Double.valueOf(result.getGlobalOptimum().getHighestScore().toString());
+                    if (metric instanceof MetricMDNUNMNormalizedEntropyPotentiallyPrecomputed) {
+                        quality /= (double)data.getDefinition().getQuasiIdentifyingAttributes().size();
+                    } else if (metric instanceof MetricSDNMKLDivergence) {
+                        quality /= Double.valueOf(result.getLattice().getTop().getHighestScore().toString());
+                    }
+                    return 1d-quality;
+                }
+            }
+        }
+        data.getHandle().release();
+        throw new IllegalStateException("Unknown transfomation");
+    }
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
      * @param pruning
      * @return
      * @throws IOException 
@@ -243,7 +268,7 @@ public class BenchmarkExperiment {
     public static double getExecutionTime(Data data, ARXCostBenefitConfiguration configuration, boolean pruning) throws IOException {
         return getExecutionTime(data, configuration, pruning, true);
     }
-    
+
     /**
      * Perform benchmark run
      * @param data
@@ -271,8 +296,7 @@ public class BenchmarkExperiment {
         data.getHandle().release();
         return result;
     }
-
-
+    
     /**
      * Extracts a data subset
      * @param data
@@ -299,6 +323,7 @@ public class BenchmarkExperiment {
         }
         return result;
     }
+
 
     /**
      * Perform benchmark run
@@ -414,6 +439,29 @@ public class BenchmarkExperiment {
             payout += (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
             data.getHandle().release();
         }
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+
+    /**
+     * Perform benchmark run.
+     * @param data
+     * @param configuration
+     * @return
+     * @throws IOException 
+     */
+    public static double getSafeHarborPayout(Data data, ARXCostBenefitConfiguration configuration) throws IOException {
+
+        double payout = 0d;
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(false));
+        config.setMaxOutliers(1d);
+        // Ugly hack
+        config.addPrivacyModel(new DPresence(0d, 1d, DataSubset.create(data, data)));
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+        data.getHandle().release();
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
 
