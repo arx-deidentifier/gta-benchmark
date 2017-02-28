@@ -58,6 +58,12 @@ public class BenchmarkSetup {
                 return "adult-tn";
             }
         },
+        ADULT_TN_288 {
+            @Override
+            public String toString() {
+                return "adult-tn-288";
+            }
+        },
         ADULT_TN_SAFE_HARBOR {
             @Override
             public String toString() {
@@ -123,6 +129,9 @@ public class BenchmarkSetup {
             break;
         case ADULT_TN:
             data = Data.create("data/adult_tn.csv", Charset.defaultCharset(), ';');
+            break;
+        case ADULT_TN_288:
+            data = Data.create("data/adult_tn_288.csv", Charset.defaultCharset(), ',');
             break;
         case ADULT_TN_SAFE_HARBOR:
             data = Data.create("data/adult_tn.csv", Charset.defaultCharset(), ';');
@@ -246,7 +255,6 @@ public class BenchmarkSetup {
     public static double[] getParametersGainLoss2() {
         return new double[]{0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000};
     }
-    
     /**
      * Returns the generalization hierarchy for the dataset and attribute
      * @param dataset
@@ -262,6 +270,8 @@ public class BenchmarkSetup {
             return Hierarchy.create("hierarchies/adult_nc_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ADULT_TN:
             return Hierarchy.create("hierarchies/adult_tn_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
+        case ADULT_TN_288:
+            return Hierarchy.create("hierarchies/adult_tn_288_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ADULT_TN_SAFE_HARBOR:
             return Hierarchy.create("hierarchies/adult_tn_safe_harbor_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ATUS:
@@ -304,6 +314,7 @@ public class BenchmarkSetup {
                                     "sex",
                                     "workclass",
                                     "occupation" };
+        case ADULT_TN_288:
         case ADULT_TN:
             return new String[] {   "sex", "age", "zip", "race"};
         case ADULT_TN_SAFE_HARBOR:
