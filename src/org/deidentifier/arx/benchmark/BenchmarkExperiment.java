@@ -449,6 +449,33 @@ public class BenchmarkExperiment {
      * Perform benchmark run
      * @param data
      * @param configuration
+     * @param optimal 
+     * @return
+     * @throws IOException 
+     */
+    public static double getRecordLevelPayoutNoAttack(Data data, ARXCostBenefitConfiguration configuration) throws IOException {
+
+        double payout = 0d;
+        int max = data.getHandle().getNumRows();
+                for (int record=0; record<max; record++) {
+            
+            ARXConfiguration config = ARXConfiguration.create();
+            config.setCostBenefitConfiguration(configuration);
+            config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+            config.setMaxOutliers(0d);
+            config.addPrivacyModel(new ProfitabilityJournalistNoAttack(DataSubset.create(data, getSet(record))));
+            ARXAnonymizer anonymizer = new ARXAnonymizer();
+            ARXResult result = anonymizer.anonymize(data, config);
+            payout += (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+            data.getHandle().release();
+        }
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
      * @param optimized 
      * @return
      * @throws IOException 

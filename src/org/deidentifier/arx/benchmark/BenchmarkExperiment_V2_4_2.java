@@ -43,13 +43,15 @@ import de.linearbits.subframe.analyzer.ValueBuffer;
 public abstract class BenchmarkExperiment_V2_4_2 extends BenchmarkExperiment {
 
     /** The benchmark instance */
-    private static final Benchmark BENCHMARK           = new Benchmark(new String[] { "adversary gain = publisher loss" });
+    private static final Benchmark BENCHMARK                     = new Benchmark(new String[] { "adversary gain = publisher loss" });
     /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_FULL_DOMAIN = BENCHMARK.addMeasure("Full-domain generalization + record suppression");
+    private static final int       PAYOUT_FULL_DOMAIN            = BENCHMARK.addMeasure("Full-domain generalization + record suppression");
     /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_RECORD_LEVEL = BENCHMARK.addMeasure("Record-level generalization");
+    private static final int       PAYOUT_RECORD_LEVEL           = BENCHMARK.addMeasure("Record-level generalization");
     /** MEASUREMENT PARAMETER */
-    private static final int       PAYOUT_SAFE_HARBOR  = BENCHMARK.addMeasure("HIPAA Safe Harbor");
+    private static final int       PAYOUT_RECORD_LEVEL_NO_ATTACK = BENCHMARK.addMeasure("Record-level generalization (no attack)");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_SAFE_HARBOR            = BENCHMARK.addMeasure("HIPAA Safe Harbor");
 
     /**
      * Main
@@ -97,6 +99,8 @@ public abstract class BenchmarkExperiment_V2_4_2 extends BenchmarkExperiment {
         BENCHMARK.addValue(PAYOUT_FULL_DOMAIN, getCostBenefitPayout(data, configuration));
         // Payout
         BENCHMARK.addValue(PAYOUT_RECORD_LEVEL, getRecordLevelPayout(data, configuration, true));
+        // Payout
+        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL_NO_ATTACK, getRecordLevelPayoutNoAttack(data, configuration));
         // Ugly hack
         BENCHMARK.addValue(PAYOUT_SAFE_HARBOR, getSafeHarborPayout(data_sh, configuration));
     }
