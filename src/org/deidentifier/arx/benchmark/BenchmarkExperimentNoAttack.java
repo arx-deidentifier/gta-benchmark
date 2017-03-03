@@ -58,7 +58,7 @@ public abstract class BenchmarkExperimentNoAttack extends BenchmarkExperiment {
                                                                         .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
 
         // Perform
-        for (double gainloss : new double[] { 300d }) {
+        for (double gainloss : new double[] { 0d, 300d, 2000d }) {
             configuration.setAdversaryGain(gainloss);
             configuration.setPublisherLoss(gainloss);
             System.out.println("Gain=loss=" + gainloss);
