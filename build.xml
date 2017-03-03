@@ -106,6 +106,13 @@
                 <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperimentComparison" />
             </manifest>
         </jar>
+        <jar destfile="jars/experiment-no-attack-v${version}.jar">
+            <zipfileset src="build/extLibs/lib.jar" excludes="META-INF/*.RSA,META-INF/*.SF,META-INF/*.DSA" />
+            <fileset dir="build/lib" defaultexcludes="no" />
+            <manifest>
+                <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperimentNoAttack" />
+            </manifest>
+        </jar>
     </target>
 
     <target name="jars" depends="jar-libs">

@@ -692,8 +692,8 @@ public class ARXConfiguration implements Serializable, Cloneable {
                     }
                 }
             }
-        // With suppression
-        } else {
+        // With suppression <100%
+        } else if (this.getMaxOutliers() < 1d) {
             for (PrivacyCriterion criterion : this.getPrivacyModels()) {
                 if (!criterion.isMonotonicWithSuppression() || 
                     !criterion.isMonotonicWithGeneralization()) {
@@ -704,6 +704,8 @@ public class ARXConfiguration implements Serializable, Cloneable {
                     }
                 }
             }
+        } else {
+            return Monotonicity.NONE;
         }
         
         // Full

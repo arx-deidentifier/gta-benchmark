@@ -46,6 +46,7 @@ import org.deidentifier.arx.criteria.AverageReidentificationRisk;
 import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.criteria.KAnonymity;
 import org.deidentifier.arx.criteria.ProfitabilityJournalist;
+import org.deidentifier.arx.criteria.ProfitabilityJournalistNoAttack;
 import org.deidentifier.arx.criteria.ProfitabilityProsecutor;
 import org.deidentifier.arx.exceptions.RollbackRequiredException;
 import org.deidentifier.arx.metric.Metric;
@@ -422,8 +423,10 @@ public class BenchmarkExperiment {
     public static double getRecordLevelPayout(Data data, ARXCostBenefitConfiguration configuration, boolean optimal) throws IOException {
 
         double payout = 0d;
+        int max = data.getHandle().getNumRows();
+        //max = 100;
         
-        for (int record=0; record<data.getHandle().getNumRows(); record++) {
+        for (int record=0; record<max; record++) {
             
             ARXConfiguration config = ARXConfiguration.create();
             config.setCostBenefitConfiguration(configuration);
@@ -442,6 +445,44 @@ public class BenchmarkExperiment {
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
 
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @param optimized 
+     * @return
+     * @throws IOException 
+     */
+    public static void performRecordLevelGeneralizationNoAttack(Data data, ARXCostBenefitConfiguration configuration, boolean optimized) throws IOException {
+
+        int max = data.getHandle().getNumRows();
+        if (!optimized) {
+            ProfitabilityJournalist.NAIVE_NO_ATTACK = true;
+            for (int record=0; record<max; record++) {
+                ARXConfiguration config = ARXConfiguration.create();
+                config.setCostBenefitConfiguration(configuration);
+                config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+                config.setMaxOutliers(1d);
+                config.addPrivacyModel(new ProfitabilityJournalist(DataSubset.create(data, getSet(record))));
+                ARXAnonymizer anonymizer = new ARXAnonymizer();
+                anonymizer.anonymize(data, config);
+                data.getHandle().release();
+            }
+            ProfitabilityJournalist.NAIVE_NO_ATTACK = false;
+        } else {
+            for (int record=0; record<max; record++) {
+                ARXConfiguration config = ARXConfiguration.create();
+                config.setCostBenefitConfiguration(configuration);
+                config.setQualityModel(Metric.createEntropyBasedInformationLossMetric());
+                config.setMaxOutliers(0d);
+                config.addPrivacyModel(new ProfitabilityJournalistNoAttack(DataSubset.create(data, getSet(record))));
+                ARXAnonymizer anonymizer = new ARXAnonymizer();
+                anonymizer.anonymize(data, config);
+                data.getHandle().release();
+            }
+        }
+    }
+    
     /**
      * Perform benchmark run.
      * @param data

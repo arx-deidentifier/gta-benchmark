@@ -38,6 +38,9 @@ public class ProfitabilityJournalist extends ProfitabilityProsecutor {
     /** SVUID */
     private static final long serialVersionUID = 5089787798100584405L;
 
+    /** Implements a naive version of the "No-Attack" variant */
+    public static boolean     NAIVE_NO_ATTACK  = false;
+
     /** Data subset */
     private DataSubset        subset;
 
@@ -102,6 +105,12 @@ public class ProfitabilityJournalist extends ProfitabilityProsecutor {
             return false;
         }
         
+        double successProbability = getSuccessProbability(entry);
+        double adversaryPayoff = (config.getAdversaryGain() * successProbability - config.getAdversaryCost());
+        if (NAIVE_NO_ATTACK && adversaryPayoff > 0){
+            return false;
+        }
+        
         // Calculate information loss and success probability
         double informationLoss = MetricSDNMEntropyBasedInformationLoss.getEntropyBasedInformationLoss(transformation,
                                                                                                       entry,
@@ -109,9 +118,11 @@ public class ProfitabilityJournalist extends ProfitabilityProsecutor {
                                                                                                       this.microaggregationFunctions,
                                                                                                       this.microaggregationStartIndex,
                                                                                                       maxIL);
-        double successProbability = getSuccessProbability(entry);
-        double publisherPayoff = riskModel.getExpectedPublisherPayout(informationLoss, successProbability);
-                
+        
+        // Arguments will be checked in subsequent method calls
+        double publisherPayoff = (config.getPublisherBenefit() * (1d - informationLoss)) - 
+               (adversaryPayoff > 0 ? config.getPublisherLoss() * successProbability : 0);
+        
         // We keep the set of records if the payoff is sufficient
         return !optimize ? (publisherPayoff > 0) : (publisherPayoff > ((1d - gsFactor) * config.getPublisherBenefit()));
     }
