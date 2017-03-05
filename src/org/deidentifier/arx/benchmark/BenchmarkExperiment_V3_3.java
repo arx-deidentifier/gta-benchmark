@@ -123,21 +123,21 @@ public abstract class BenchmarkExperiment_V3_3 extends BenchmarkExperiment {
         BENCHMARK.addValue(PAYOUT_WAN_NO_ATTACK, getWanPayoutNoAttackCENSUS(data, configuration));
         // Payout
         System.out.println(" - Wan et al.");
-        BENCHMARK.addValue(PAYOUT_WAN, 0);//getWanPayoutCENSUS(data, configuration, true));
+        BENCHMARK.addValue(PAYOUT_WAN, getWanPayoutCENSUS(data, configuration, true));
         // Payout
         System.out.println(" - Full domain");
-        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN, 0);//getCostBenefitPayoutCENSUS(data, configuration));
+        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN, getCostBenefitPayoutCENSUS(data, configuration));
         // Payout
         System.out.println(" - Full domain no-attack");
-        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN_NO_ATTACK, 0);//getFullDomainPayoutNoAttackCENSUS(data, configuration));
+        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN_NO_ATTACK, getFullDomainPayoutNoAttackCENSUS(data, configuration));
         // Payout
         System.out.println(" - Record-level");
-        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL, 0);//getRecordLevelPayoutCENSUS(data, configuration, true));
+        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL, getRecordLevelPayoutCENSUS(data, configuration, true));
         // Payout
         System.out.println(" - Record-level no-attack");
-        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL_NO_ATTACK, 0);//getRecordLevelPayoutNoAttackCENSUS(data, configuration));
+        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL_NO_ATTACK, getRecordLevelPayoutNoAttackCENSUS(data, configuration));
         // Ugly hack
         System.out.println(" - Safe Harbor");
-        BENCHMARK.addValue(PAYOUT_SAFE_HARBOR, 0);//getSafeHarborPayoutCENSUS(data_sh, configuration));
+        BENCHMARK.addValue(PAYOUT_SAFE_HARBOR, getSafeHarborPayoutCENSUS(data_sh, configuration));
     }
 }

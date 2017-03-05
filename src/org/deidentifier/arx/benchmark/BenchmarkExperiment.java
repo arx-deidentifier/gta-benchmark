@@ -706,7 +706,7 @@ public class BenchmarkExperiment {
         config.addPrivacyModel(new ProfitabilityProsecutorNoAttack());
         ARXAnonymizer anonymizer = new ARXAnonymizer();
         ARXResult result = anonymizer.anonymize(data, config);
-
+        
         result.getOutput(result.getLattice().getTop(), false);
         MetricSDNMPublisherPayout.USE_CENSUS_DATA = true;
         result.getOutput(result.getGlobalOptimum(), false);

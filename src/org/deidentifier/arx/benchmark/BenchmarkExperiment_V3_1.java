@@ -29,7 +29,6 @@ import org.deidentifier.arx.Data;
 import org.deidentifier.arx.benchmark.BenchmarkSetup.BenchmarkDataset;
 
 import cern.colt.Arrays;
-
 import de.linearbits.subframe.Benchmark;
 import de.linearbits.subframe.analyzer.ValueBuffer;
 
@@ -82,7 +81,7 @@ public abstract class BenchmarkExperiment_V3_1 extends BenchmarkExperiment {
                                                                         .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
 
         double[] parameters = BenchmarkSetup.getParametersGainLoss2();
-        for (double parameter : new double[]{50,100}) {
+        for (double parameter : new double[]{50,100, 300}) {
             config.setAdversaryGain(parameter);
             config.setPublisherLoss(parameter);
             System.out.println(" - Adversary gain = publisher loss - " + parameter + " - " + Arrays.toString(parameters));

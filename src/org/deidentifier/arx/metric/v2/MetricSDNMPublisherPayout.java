@@ -234,10 +234,6 @@ public class MetricSDNMPublisherPayout extends AbstractMetricSingleDimensional {
     @Override
     protected ILSingleDimensionalWithBound getInformationLossInternal(Transformation transformation, HashGroupify groupify) {
         
-        if (USE_CENSUS_DATA) {
-            System.out.println("USE_CENSUS");
-        }
-        
         // Prepare
         double real = 0;
         double bound = 0;
