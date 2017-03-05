@@ -26,9 +26,11 @@ import java.io.IOException;
 
 import org.deidentifier.arx.ARXCostBenefitConfiguration;
 import org.deidentifier.arx.Data;
+import org.deidentifier.arx.PopulationStatistics;
 import org.deidentifier.arx.benchmark.BenchmarkSetup.BenchmarkDataset;
 
 import cern.colt.Arrays;
+
 import de.linearbits.subframe.Benchmark;
 import de.linearbits.subframe.analyzer.ValueBuffer;
 
@@ -41,12 +43,24 @@ import de.linearbits.subframe.analyzer.ValueBuffer;
  *
  * @author Fabian Prasser
  */
-public abstract class BenchmarkExperiment_V2_4 extends BenchmarkExperiment {
+public abstract class BenchmarkExperiment_V3_3 extends BenchmarkExperiment {
 
     /** The benchmark instance */
-    private static final Benchmark BENCHMARK           = new Benchmark(new String[] { "adversary gain = publisher loss" });
+    private static final Benchmark BENCHMARK                     = new Benchmark(new String[] { "adversary gain = publisher loss" });
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_FULL_DOMAIN            = BENCHMARK.addMeasure("Full-domain generalization + record suppression");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_FULL_DOMAIN_NO_ATTACK = BENCHMARK.addMeasure("Full-domain generalization + record suppression (no attack)");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_RECORD_LEVEL           = BENCHMARK.addMeasure("Record-level generalization");
     /** MEASUREMENT PARAMETER */
     private static final int       PAYOUT_RECORD_LEVEL_NO_ATTACK = BENCHMARK.addMeasure("Record-level generalization (no attack)");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_WAN           = BENCHMARK.addMeasure("Wan et al.");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_WAN_NO_ATTACK = BENCHMARK.addMeasure("Wan et al. (no attack)");
+    /** MEASUREMENT PARAMETER */
+    private static final int       PAYOUT_SAFE_HARBOR            = BENCHMARK.addMeasure("HIPAA Safe Harbor");
 
     /**
      * Main
@@ -54,12 +68,23 @@ public abstract class BenchmarkExperiment_V2_4 extends BenchmarkExperiment {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
+        
+        int startindex = 0;
+        if (args != null && args.length != 0) {
+            startindex = Integer.valueOf(args[0]);
+        }
 
-        BenchmarkDataset dataset = BenchmarkDataset.ADULT_TN;
+        BenchmarkDataset dataset = BenchmarkDataset.ADULT_TN_288;
         BenchmarkDataset dataset_sh = BenchmarkDataset.ADULT_TN_SAFE_HARBOR;
 
         // Init
+        BENCHMARK.addAnalyzer(PAYOUT_FULL_DOMAIN, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_FULL_DOMAIN_NO_ATTACK, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_RECORD_LEVEL, new ValueBuffer());
         BENCHMARK.addAnalyzer(PAYOUT_RECORD_LEVEL_NO_ATTACK, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_WAN, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_WAN_NO_ATTACK, new ValueBuffer());
+        BENCHMARK.addAnalyzer(PAYOUT_SAFE_HARBOR, new ValueBuffer());
         
         // Perform
         ARXCostBenefitConfiguration config = ARXCostBenefitConfiguration.create()
@@ -68,14 +93,16 @@ public abstract class BenchmarkExperiment_V2_4 extends BenchmarkExperiment {
                                                                         .setPublisherLoss(BenchmarkSetup.getDefaultPublisherLoss())
                                                                         .setPublisherBenefit(BenchmarkSetup.getDefaultPublisherBenefit());
 
+        PopulationStatistics.load();
         double[] parameters = BenchmarkSetup.getParametersGainLoss2();
-        for (double parameter : new double[]{400}) {
+        for (int i = startindex; i<parameters.length; i++) {
+            double parameter = parameters[i];
             config.setAdversaryGain(parameter);
             config.setPublisherLoss(parameter);
             System.out.println(" - Adversary gain = publisher loss - " + parameter + " - " + Arrays.toString(parameters));
             BENCHMARK.addRun(config.getAdversaryGain());
             analyze(dataset, dataset_sh, config);
-            BENCHMARK.getResults().write(new File("results/"+dataset.toString()+"-experiment-v2-4-2.csv"));
+            BENCHMARK.getResults().write(new File("results/"+dataset.toString()+"-experiment-v3-3.csv"));
         }
     }
 
@@ -90,8 +117,27 @@ public abstract class BenchmarkExperiment_V2_4 extends BenchmarkExperiment {
      
         // Load data
         Data data = BenchmarkSetup.getData(dataset);
-        
-        // Run benchmarks
-        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL_NO_ATTACK, getRecordLevelPayoutNoAttack(data, configuration));
+        Data data_sh = BenchmarkSetup.getData(dataset_sh);
+        // Payout
+        System.out.println(" - Wan et al. no-attack");
+        BENCHMARK.addValue(PAYOUT_WAN_NO_ATTACK, getWanPayoutNoAttackCENSUS(data, configuration));
+        // Payout
+        System.out.println(" - Wan et al.");
+        BENCHMARK.addValue(PAYOUT_WAN, getWanPayoutCENSUS(data, configuration, true));
+        // Payout
+        System.out.println(" - Full domain");
+        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN, getCostBenefitPayoutCENSUS(data, configuration));
+        // Payout
+        System.out.println(" - Full domain no-attack");
+        BENCHMARK.addValue(PAYOUT_FULL_DOMAIN_NO_ATTACK, getFullDomainPayoutNoAttackCENSUS(data, configuration));
+        // Payout
+        System.out.println(" - Record-level");
+        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL, getRecordLevelPayoutCENSUS(data, configuration, true));
+        // Payout
+        System.out.println(" - Record-level no-attack");
+        BENCHMARK.addValue(PAYOUT_RECORD_LEVEL_NO_ATTACK, getRecordLevelPayoutNoAttackCENSUS(data, configuration));
+        // Ugly hack
+        System.out.println(" - Safe Harbor");
+        BENCHMARK.addValue(PAYOUT_SAFE_HARBOR, getSafeHarborPayoutCENSUS(data_sh, configuration));
     }
 }

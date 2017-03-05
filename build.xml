@@ -113,6 +113,27 @@
                 <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperimentNoAttack" />
             </manifest>
         </jar>
+        <jar destfile="jars/experiment-v3-1-v${version}.jar">
+            <zipfileset src="build/extLibs/lib.jar" excludes="META-INF/*.RSA,META-INF/*.SF,META-INF/*.DSA" />
+            <fileset dir="build/lib" defaultexcludes="no" />
+            <manifest>
+                <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperiment_V3_1" />
+            </manifest>
+        </jar>
+        <jar destfile="jars/experiment-v3-2-v${version}.jar">
+            <zipfileset src="build/extLibs/lib.jar" excludes="META-INF/*.RSA,META-INF/*.SF,META-INF/*.DSA" />
+            <fileset dir="build/lib" defaultexcludes="no" />
+            <manifest>
+                <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperiment_V3_2" />
+            </manifest>
+        </jar>
+    	 <jar destfile="jars/experiment-v3-3-v${version}.jar">
+    	            <zipfileset src="build/extLibs/lib.jar" excludes="META-INF/*.RSA,META-INF/*.SF,META-INF/*.DSA" />
+    	            <fileset dir="build/lib" defaultexcludes="no" />
+    	            <manifest>
+    	                <attribute name="Main-Class" value="org.deidentifier.arx.benchmark.BenchmarkExperiment_V3_3" />
+    	            </manifest>
+    	        </jar>
     </target>
 
     <target name="jars" depends="jar-libs">

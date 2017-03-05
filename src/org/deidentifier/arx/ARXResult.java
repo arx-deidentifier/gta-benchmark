@@ -35,6 +35,7 @@ import org.deidentifier.arx.framework.data.Dictionary;
 import org.deidentifier.arx.framework.lattice.SolutionSpace;
 import org.deidentifier.arx.framework.lattice.Transformation;
 import org.deidentifier.arx.metric.Metric;
+import org.deidentifier.arx.metric.v2.MetricSDNMPublisherPayout;
 
 /**
  * Encapsulates the results of an execution of the ARX algorithm.
@@ -321,7 +322,9 @@ public class ARXResult {
         transformation.setChecked(information.properties);
 
         // Store
-        if (!node.isChecked() || node.getHighestScore().compareTo(node.getLowestScore()) != 0) {
+        if (!node.isChecked() || 
+                node.getHighestScore().compareTo(node.getLowestScore()) != 0 || 
+                MetricSDNMPublisherPayout.USE_CENSUS_DATA) {
             
             node.access().setChecked(true);
             if (transformation.hasProperty(solutionSpace.getPropertyAnonymous())) {

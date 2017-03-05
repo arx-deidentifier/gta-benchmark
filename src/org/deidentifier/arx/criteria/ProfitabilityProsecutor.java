@@ -98,7 +98,7 @@ public class ProfitabilityProsecutor extends ImplicitPrivacyCriterion {
     public int getRequirements(){
         return ARXConfiguration.REQUIREMENT_COUNTER;
     }
-    
+
     @Override
     public void initialize(DataManager manager, ARXConfiguration config) {
 
@@ -115,7 +115,7 @@ public class ProfitabilityProsecutor extends ImplicitPrivacyCriterion {
         // Calculate MaxIL
         this.maxIL = MetricSDNMEntropyBasedInformationLoss.getMaximalEntropyBasedInformationLoss(this.shares, this.microaggregationDomainSizes);
     }
-
+    
     @Override
     public boolean isAnonymous(Transformation transformation, HashGroupifyEntry entry) {
         
