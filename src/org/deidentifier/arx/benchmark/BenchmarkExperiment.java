@@ -151,6 +151,7 @@ public class BenchmarkExperiment {
         data.getHandle().release();
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
+
     /**
      * Perform benchmark run
      * @param data
@@ -163,7 +164,7 @@ public class BenchmarkExperiment {
         double payout = 0d;
         ARXConfiguration config = ARXConfiguration.create();
         config.setCostBenefitConfiguration(configuration);
-        config.setQualityModel(Metric.createPublisherPayoutMetric(false));
+        config.setQualityModel(Metric.createPublisherPayoutMetric(true));
         config.setMaxOutliers(1d);
         config.addPrivacyModel(new ProfitabilityJournalist(subset));
         ARXAnonymizer anonymizer = new ARXAnonymizer();
@@ -172,7 +173,75 @@ public class BenchmarkExperiment {
         data.getHandle().release();
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
-    
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @return
+     * @throws IOException 
+     */
+    public static long getTimeCostBenefitPayoutPopulationTableNoAttack(Data data, DataSubset subset, ARXCostBenefitConfiguration configuration, boolean optimized) throws IOException {
+
+        long time = System.currentTimeMillis();
+        if (!optimized) {
+            ProfitabilityJournalist.NAIVE_NO_ATTACK = true;
+        }
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        if (!optimized) {
+            config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+        } else {
+            config.setQualityModel(Metric.createEntropyBasedInformationLossMetric());
+        }
+        config.setMaxOutliers(1d);
+        if (!optimized) {
+            config.addPrivacyModel(new ProfitabilityJournalist(subset));
+        } else {
+            config.addPrivacyModel(new ProfitabilityJournalistNoAttack(subset));
+        }
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        anonymizer.anonymize(data, config).getTime();
+        data.getHandle().release();
+        if (!optimized) {
+            ProfitabilityJournalist.NAIVE_NO_ATTACK = false;
+        }
+        return System.currentTimeMillis() - time;
+    }
+
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @return
+     * @throws IOException 
+     */
+    public static long getTimeCostBenefitPayoutNoAttack(Data data, ARXCostBenefitConfiguration configuration, boolean optimized) throws IOException {
+
+        long time = System.currentTimeMillis();
+        if (!optimized) {
+            ProfitabilityProsecutor.NAIVE_NO_ATTACK = true;
+        }
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        if (!optimized) {
+            config.setQualityModel(Metric.createPublisherPayoutMetric(false));
+        } else {
+            config.setQualityModel(Metric.createEntropyBasedInformationLossMetric());
+        }
+        config.setMaxOutliers(1d);
+        if (!optimized) {
+            config.addPrivacyModel(new ProfitabilityProsecutor());
+        } else {
+            config.addPrivacyModel(new ProfitabilityProsecutorNoAttack());
+        }
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        anonymizer.anonymize(data, config).getTime();
+        data.getHandle().release();
+        if (!optimized) {
+            ProfitabilityProsecutor.NAIVE_NO_ATTACK = false;
+        }
+        return System.currentTimeMillis() - time;
+    }
     /**
      * Perform benchmark run
      * @param data

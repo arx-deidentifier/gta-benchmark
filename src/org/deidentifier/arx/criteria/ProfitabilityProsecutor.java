@@ -42,6 +42,8 @@ public class ProfitabilityProsecutor extends ImplicitPrivacyCriterion {
     /** SVUID */
     private static final long               serialVersionUID = -1698534839214708559L;
 
+    public static boolean NAIVE_NO_ATTACK = false;
+
     /** Configuration */
     protected ARXCostBenefitConfiguration     config;
 
@@ -124,6 +126,12 @@ public class ProfitabilityProsecutor extends ImplicitPrivacyCriterion {
             return false;
         }
         
+        double successProbability = getSuccessProbability(entry);
+        double adversaryPayoff = (config.getAdversaryGain() * successProbability - config.getAdversaryCost());
+        if (NAIVE_NO_ATTACK && adversaryPayoff >= 0){
+            return false;
+        }
+        
         // Calculate information loss and success probability
         double informationLoss = MetricSDNMEntropyBasedInformationLoss.getEntropyBasedInformationLoss(transformation,
                                                                                                       entry,
@@ -131,9 +139,9 @@ public class ProfitabilityProsecutor extends ImplicitPrivacyCriterion {
                                                                                                       this.microaggregationFunctions,
                                                                                                       this.microaggregationStartIndex,
                                                                                                       maxIL);
-        double successProbability = getSuccessProbability(entry);
+        
         double publisherPayoff = riskModel.getExpectedPublisherPayout(informationLoss, successProbability);
-                
+        
         // We keep the set of records if the payoff is > 0
         return publisherPayoff > 0;
     }

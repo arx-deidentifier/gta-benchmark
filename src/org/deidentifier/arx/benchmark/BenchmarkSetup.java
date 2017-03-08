@@ -295,6 +295,14 @@ public class BenchmarkSetup {
     public static double[] getParametersGainLoss2() {
         return new double[]{50, 100, 200, 300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000};
     }
+
+    /**
+     * Parameters to benchmark
+     * @return
+     */
+    public static double[] getParametersGainLoss3() {
+        return new double[]{0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000};
+    }
     /**
      * Returns the generalization hierarchy for the dataset and attribute
      * @param dataset

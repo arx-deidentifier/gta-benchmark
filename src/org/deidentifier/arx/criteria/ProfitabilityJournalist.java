@@ -178,7 +178,7 @@ public class ProfitabilityJournalist extends ProfitabilityProsecutor {
         
         double successProbability = USE_CENSUS_DATA ? getSuccessProbabilityCensus(entry) : getSuccessProbability(entry);
         double adversaryPayoff = (config.getAdversaryGain() * successProbability - config.getAdversaryCost());
-        if (NAIVE_NO_ATTACK && adversaryPayoff > 0){
+        if (NAIVE_NO_ATTACK && adversaryPayoff >= 0){
             return false;
         }
         
