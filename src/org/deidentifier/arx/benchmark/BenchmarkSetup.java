@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 
 import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.Data;
+import org.deidentifier.arx.DataSubset;
 
 /**
  * Benchmark of ARX's implementation of the game theoretic approach proposed in: <br>
@@ -62,6 +63,18 @@ public class BenchmarkSetup {
             @Override
             public String toString() {
                 return "adult-tn-288";
+            }
+        },
+        ADULT_TN_288_TABLE {
+            @Override
+            public String toString() {
+                return "adult-tn-288-table";
+            }
+        },
+        ADULT_TN_288_TABLE_SAFE_HARBOR {
+            @Override
+            public String toString() {
+                return "adult-tn-288-table-sh";
             }
         },
         ADULT_TN_SAFE_HARBOR {
@@ -133,6 +146,12 @@ public class BenchmarkSetup {
         case ADULT_TN_288:
             data = Data.create("data/adult_tn_288.csv", Charset.defaultCharset(), ',');
             break;
+        case ADULT_TN_288_TABLE:
+            data = Data.create("data/adult_tn_288_table.csv", Charset.defaultCharset(), ';');
+            break;
+        case ADULT_TN_288_TABLE_SAFE_HARBOR:
+            data = Data.create("data/adult_tn_288_table.csv", Charset.defaultCharset(), ';');
+            break;
         case ADULT_TN_SAFE_HARBOR:
             data = Data.create("data/adult_tn.csv", Charset.defaultCharset(), ';');
             break;
@@ -156,7 +175,8 @@ public class BenchmarkSetup {
             data.getDefinition().setAttributeType(qi, getHierarchy(dataset, qi));
         }
         
-        if (dataset == BenchmarkDataset.ADULT_TN_SAFE_HARBOR) {
+        if (dataset == BenchmarkDataset.ADULT_TN_SAFE_HARBOR ||
+            dataset == BenchmarkDataset.ADULT_TN_288_TABLE_SAFE_HARBOR) {
             for (String qi : getQuasiIdentifyingAttributes(dataset)) {
                 int max = data.getDefinition().getMaximumGeneralization(qi);
                 data.getDefinition().setMaximumGeneralization(qi, max);
@@ -167,6 +187,26 @@ public class BenchmarkSetup {
         return data;
     }
 
+    /**
+     * Configures and returns the dataset
+     * @param dataset
+     * @param criteria
+     * @return
+     * @throws IOException
+     */
+    
+    public static DataSubset getDataSubset(BenchmarkDataset dataset) throws IOException {
+        switch (dataset) {
+        case ADULT:
+        case ADULT_TN_288_TABLE:
+        case ADULT_TN_288_TABLE_SAFE_HARBOR:
+            return DataSubset.create(Data.create("data/adult_tn_288_table.csv", Charset.defaultCharset(), ';'),
+                                     Data.create("data/adult_tn_288.csv", Charset.defaultCharset(), ','));
+        default:
+            break;
+        }        
+        throw new RuntimeException("Invalid dataset");
+    }
     /**
      * Default parameter
      * @return
@@ -272,6 +312,10 @@ public class BenchmarkSetup {
             return Hierarchy.create("hierarchies/adult_tn_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ADULT_TN_288:
             return Hierarchy.create("hierarchies/adult_tn_288_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
+        case ADULT_TN_288_TABLE:
+            return Hierarchy.create("hierarchies/adult_tn_288_table_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
+        case ADULT_TN_288_TABLE_SAFE_HARBOR:
+            return Hierarchy.create("hierarchies/adult_tn_288_table_safe_harbor_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ADULT_TN_SAFE_HARBOR:
             return Hierarchy.create("hierarchies/adult_tn_safe_harbor_hierarchy_" + attribute + ".csv", Charset.defaultCharset(), ';');
         case ATUS:
@@ -315,6 +359,8 @@ public class BenchmarkSetup {
                                     "workclass",
                                     "occupation" };
         case ADULT_TN_288:
+        case ADULT_TN_288_TABLE:
+        case ADULT_TN_288_TABLE_SAFE_HARBOR:
         case ADULT_TN:
             return new String[] {   "sex", "age", "zip", "race"};
         case ADULT_TN_SAFE_HARBOR:

@@ -1,12 +1,15 @@
 package org.deidentifier.arx;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import cern.colt.Arrays;
+import java.util.Map.Entry;
 
 public class PopulationStatistics {
 
@@ -79,5 +82,39 @@ public class PopulationStatistics {
     }
     public static double load() {
         return vocabulary[0].values().iterator().next() + statistics.values().iterator().next();
+    }
+    
+    public static void main(String[] args) throws IOException {
+        @SuppressWarnings("unchecked")
+        Map<Integer, String>[] inverse = new Map[4];
+        for (int i = 0; i < vocabulary.length; i++) {
+            Map<String, Integer> dictionary = vocabulary[i];
+            inverse[i] = new HashMap<Integer, String>();
+            for (Entry<String, Integer> entry : dictionary.entrySet()) {
+                inverse[i].put(entry.getValue(), entry.getKey());
+            }
+        }
+        
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("table.csv")));
+        writer.write("sex;zip;age;race\n");
+        
+        int index = 0;
+        int total = statistics.size();
+        for (Entry<List<Integer>, Double> entry : statistics.entrySet()) {
+            index++;
+            if (index % 100 == 0) {
+                System.out.println(index+"/"+total);
+            }
+            List<String> record = new ArrayList<String>();
+            for (int i=0; i<entry.getKey().size(); i++) {
+                record.add(inverse[i].get(entry.getKey().get(i)));
+            }
+            String line = record.get(1)+";"+ record.get(3)+";"+ record.get(2)+";"+record.get(0)+"\n";
+            int count = (int)Math.ceil(entry.getValue());
+            for (int j=0; j<count; j++) {
+                writer.write(line);
+            }
+        }
+        writer.close();
     }
 }

@@ -158,6 +158,28 @@ public class BenchmarkExperiment {
      * @return
      * @throws IOException 
      */
+    public static double getCostBenefitPayoutPopulationTable(Data data, DataSubset subset, ARXCostBenefitConfiguration configuration) throws IOException {
+
+        double payout = 0d;
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(false));
+        config.setMaxOutliers(1d);
+        config.addPrivacyModel(new ProfitabilityJournalist(subset));
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+        data.getHandle().release();
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+    
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @return
+     * @throws IOException 
+     */
     public static double getCostBenefitPayout(Data data, ARXCostBenefitConfiguration configuration) throws IOException {
 
         double payout = 0d;
@@ -673,6 +695,29 @@ public class BenchmarkExperiment {
      * @return
      * @throws IOException 
      */
+    public static double getFullDomainPayoutNoAttackPopulationTable(Data data, DataSubset subset, ARXCostBenefitConfiguration configuration) throws IOException {
+
+        double payout = 0d;
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+        config.setMaxOutliers(1d);
+        config.addPrivacyModel(new ProfitabilityJournalistNoAttack(subset));
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        payout += (Double) result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+        data.getHandle().release();
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @param optimal 
+     * @return
+     * @throws IOException 
+     */
     public static double getFullDomainPayoutNoAttack(Data data, ARXCostBenefitConfiguration configuration) throws IOException {
 
         double payout = 0d;
@@ -716,6 +761,31 @@ public class BenchmarkExperiment {
         data.getHandle().release();
         return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
     }
+
+    /**
+     * Perform benchmark run
+     * @param data
+     * @param configuration
+     * @param optimal 
+     * @return
+     * @throws IOException 
+     */
+    public static double getFullDomainPayoutNoAttackNaivePopulationTable(Data data, DataSubset subset, ARXCostBenefitConfiguration configuration) throws IOException {
+        ProfitabilityJournalist.NAIVE_NO_ATTACK = true;
+        double payout = 0d;
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+        config.setMaxOutliers(1d);
+        config.addPrivacyModel(new ProfitabilityJournalist(subset));
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        payout += (Double) result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+        data.getHandle().release();
+        ProfitabilityJournalist.NAIVE_NO_ATTACK = false;
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+
     /**
      * Perform benchmark run
      * @param data
@@ -777,7 +847,32 @@ public class BenchmarkExperiment {
             }
         }
     }
-    
+
+    /**
+     * Perform benchmark run.
+     * @param data
+     * @param subset
+     * @param configuration
+     * @return
+     * @throws IOException 
+     */
+    public static double getSafeHarborPayout(Data data, DataSubset subset, ARXCostBenefitConfiguration configuration) throws IOException {
+
+        double payout = 0d;
+        ARXConfiguration config = ARXConfiguration.create();
+        config.setCostBenefitConfiguration(configuration);
+        config.setQualityModel(Metric.createPublisherPayoutMetric(true));
+        config.setMaxOutliers(0d);
+        // Ugly hack
+        config.addPrivacyModel(new DPresence(0d, 1d, subset));
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(data, config);
+        payout = (Double)result.getGlobalOptimum().getHighestScore().getMetadata().get(0).getValue();
+        data.getHandle().release();
+        System.out.println(payout);
+        return payout / (data.getHandle().getNumRows() * configuration.getPublisherBenefit());
+    }
+
     /**
      * Perform benchmark run.
      * @param data
